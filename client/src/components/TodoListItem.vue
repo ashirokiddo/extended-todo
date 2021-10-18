@@ -13,11 +13,15 @@
     >
       <div v-if="isEdit">
         <input
+            data-test="edit-input"
             type="text"
             v-model="editText"
         >
       </div>
-      <div v-else>
+      <div
+          v-else
+          data-test="todo-content"
+      >
         {{ item.value }}
       </div>
     </div>
@@ -39,6 +43,7 @@
 
         <button
             @click="saveEdit"
+            data-test="save-btn"
             class="btn btn-action"
         >
           <ion-icon name="checkmark-outline"/>
@@ -51,6 +56,7 @@
       >
         <button
             @click="$emit('delete', item.id)"
+            data-test="remove-btn"
             class="btn btn-action"
         >
           <ion-icon name="trash-outline"/>
@@ -58,6 +64,7 @@
 
         <button
             @click="showEdit"
+            data-test="edit-btn"
             class="btn btn-action"
         >
           <ion-icon name="pencil-outline"/>

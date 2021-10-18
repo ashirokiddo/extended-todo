@@ -20,12 +20,14 @@
 
     <div class="todo__content">
       <form
+          data-test="form"
           ref="todoForm"
           class="todo-form"
           @submit.prevent="createTodo"
       >
         <div class="input-btn-wrapper">
           <input
+              data-test="input"
               type="text"
               v-model="todoText"
               placeholder="New task"
@@ -77,6 +79,8 @@ export default {
       value: "process",
     });
 
+    const errTimerId = ref<number>(0);
+
     const todoText = ref<string>("");
 
     const todoForm = ref('todoForm') as unknown as HTMLFormElement;
@@ -114,6 +118,20 @@ export default {
           todoList.value.filter(el => el.type === activeFilter.value.value);
     });
 
+    const showTodoCreationErr = (text: string): void => {
+      inputErr.value.text = text;
+      inputErr.value.isErr = true;
+
+      if (errTimerId.value) {
+        clearTimeout(errTimerId.value);
+      }
+
+      errTimerId.value = setTimeout(() => {
+        inputErr.value.text = "";
+        inputErr.value.isErr = false;
+      }, 3000);
+    };
+
     const handleEditTodo = ({id, text}: { id: number, text: string, }) => {
       const index = todoList.value.findIndex(el => el.id === id);
 
@@ -122,9 +140,10 @@ export default {
       }
     }
 
-    const createTodo = () => {
+    const createTodo = (): void => {
       if (todoText.value.trim() === "") {
-        throw new Error("Я сумасшедший");
+        showTodoCreationErr("Нельзя сохранить пустое значение");
+        return
       }
 
       // todo replace when server side will be done
@@ -256,6 +275,15 @@ export default {
         color: darken($color: $main-text-color, $amount: 40);
       }
     }
+  }
+
+  & .input-error {
+    position: absolute;
+    left: 16px;
+    top: 100%;
+    color: #ff3709;
+    transform: translateY(4px);
+    font-size: 14px;
   }
 
   & input {

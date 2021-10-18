@@ -42,9 +42,7 @@ export default defineComponent({
       default: "no data",
     },
   },
-  setup(props: { items: TodoItemType[] }) {
-    console.log(props.items, "items");
-
+  setup() {
     return {}
   }
 });
