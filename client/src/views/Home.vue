@@ -2,7 +2,7 @@
   <div class="todo">
     <div class="header">
       <div class="header__title">
-        Todo list
+        {{ activeFilter.text }}
       </div>
 
       <div class="header__filters">
@@ -10,8 +10,8 @@
             v-for="(filter, index) in filters"
             :key="index"
             class="btn-filter"
-            :class="{'active': filter.value === activeFilter}"
-            @click="activeFilter = filter.value"
+            :class="{'active': filter.value === activeFilter.value}"
+            @click="activeFilter = filter"
         >
           <span>{{ filter.text }}</span>
         </div>
@@ -52,8 +52,9 @@
             class="list"
             :no-data-text="'Time todo something 😎'"
             :items="getTodoListByFilter"
-            @delete="deleteTodoHandle"
-            @done="doneTodoHandle"
+            @delete="handleDeleteTodo"
+            @edit="handleEditTodo"
+            @done="handleDoneTodo"
         />
       </div>
     </div>
@@ -71,11 +72,22 @@ export default {
     TodoList,
   },
   setup() {
-    const activeFilter = ref("all");
+    const activeFilter = ref({
+      text: "В процессе",
+      value: "process",
+    });
+
     const todoText = ref<string>("");
 
     const todoForm = ref('todoForm') as unknown as HTMLFormElement;
-    const todoList = ref<TodoItemType[]>([{id: 1, value: "hello!", type: "process"}]);
+
+    const todoList = ref<TodoItemType[]>([
+      {id: 0, value: "hello!", type: "process"},
+      {id: 1, value: "My name", type: "process"},
+      {id: 2, value: "is", type: "process"},
+      {id: 3, value: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", type: "process"},
+    ]);
+
     const inputErr = ref({
       isErr: true,
       text: "",
@@ -97,11 +109,18 @@ export default {
     ];
 
     const getTodoListByFilter = computed(() => {
-
-      return activeFilter.value === "all" ?
+      return activeFilter.value.value === "all" ?
           todoList.value :
-          todoList.value.filter(el => el.type === activeFilter.value);
+          todoList.value.filter(el => el.type === activeFilter.value.value);
     });
+
+    const handleEditTodo = ({id, text}: { id: number, text: string, }) => {
+      const index = todoList.value.findIndex(el => el.id === id);
+
+      if (index != -1) {
+        todoList.value[index].value = text;
+      }
+    }
 
     const createTodo = () => {
       if (todoText.value.trim() === "") {
@@ -120,25 +139,21 @@ export default {
 
       todoForm.value && todoForm.value.reset();
       todoText.value = "";
-      console.log("CREATE", id, "id");
     }
 
-    const deleteTodoHandle = (id: number): void => {
+    const handleDeleteTodo = (id: number): void => {
       const index = todoList.value.findIndex(el => el.id === id);
-      console.log(index, "index delete");
 
       if (index != -1) {
         todoList.value.splice(index, 1);
       }
     }
 
-    const doneTodoHandle = (id: number): void => {
+    const handleDoneTodo = (id: number): void => {
       const index = todoList.value.findIndex(el => el.id === id);
-      console.log("index", index)
       if (index != -1) {
         todoList.value[index].type = "done";
       }
-      console.log(id, "done id ");
     }
 
     return {
@@ -151,9 +166,10 @@ export default {
       todoText,
       getTodoListByFilter,
 
+      handleEditTodo,
       createTodo,
-      deleteTodoHandle,
-      doneTodoHandle,
+      handleDeleteTodo,
+      handleDoneTodo,
     }
   }
 }
@@ -243,15 +259,7 @@ export default {
   }
 
   & input {
-    width: 100%;
-    background-color: $secondary-color;
-    border-radius: 26px;
-    outline: none;
-    border: none;
-    font-family: inherit;
-    font-size: 18px;
     padding: 12px 12px 12px 24px;
-    box-sizing: border-box;
   }
 }
 
